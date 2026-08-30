@@ -988,14 +988,15 @@ Callback 005: SaveFileTextCallback() (2 input parameters)
   Description: FileIO: Save text data
   Param[1]: fileName (type: const char *)
   Param[2]: text (type: const char *)
-Callback 006: AudioCallback() (2 input parameters)
+Callback 006: AudioCallback() (3 input parameters)
   Name: AudioCallback
   Return type: void
   Description: 
   Param[1]: bufferData (type: void *)
   Param[2]: frames (type: unsigned int)
+  Param[3]: userData (type: void*)
 
-Functions found: 617
+Functions found: 618
 
 Function 001: InitWindow() (3 input parameters)
   Name: InitWindow
@@ -4938,24 +4939,31 @@ Function 613: SetAudioStreamCallback() (2 input parameters)
   Description: Audio thread callback to request new data
   Param[1]: stream (type: AudioStream)
   Param[2]: callback (type: AudioCallback)
-Function 614: AttachAudioStreamProcessor() (2 input parameters)
+Function 614: SetAudioStreamCallbackEX() (3 input parameters)
+  Name: SetAudioStreamCallbackEX
+  Return type: void
+  Description: Audio thread callback to request new data with user data
+  Param[1]: stream (type: AudioStream)
+  Param[2]: callback (type: AudioCallback)
+  Param[3]: userData (type: void*)
+Function 615: AttachAudioStreamProcessor() (2 input parameters)
   Name: AttachAudioStreamProcessor
   Return type: void
   Description: Attach audio stream processor to stream, receives frames x 2 samples as 'float' (stereo)
   Param[1]: stream (type: AudioStream)
   Param[2]: processor (type: AudioCallback)
-Function 615: DetachAudioStreamProcessor() (2 input parameters)
+Function 616: DetachAudioStreamProcessor() (2 input parameters)
   Name: DetachAudioStreamProcessor
   Return type: void
   Description: Detach audio stream processor from stream
   Param[1]: stream (type: AudioStream)
   Param[2]: processor (type: AudioCallback)
-Function 616: AttachAudioMixedProcessor() (1 input parameters)
+Function 617: AttachAudioMixedProcessor() (1 input parameters)
   Name: AttachAudioMixedProcessor
   Return type: void
   Description: Attach audio stream processor to the entire audio pipeline, receives frames x 2 samples as 'float' (stereo)
   Param[1]: processor (type: AudioCallback)
-Function 617: DetachAudioMixedProcessor() (1 input parameters)
+Function 618: DetachAudioMixedProcessor() (1 input parameters)
   Name: DetachAudioMixedProcessor
   Return type: void
   Description: Detach audio stream processor from the entire audio pipeline

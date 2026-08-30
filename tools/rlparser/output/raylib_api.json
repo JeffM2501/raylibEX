@@ -3161,6 +3161,10 @@
         {
           "type": "unsigned int",
           "name": "frames"
+        },
+        {
+          "type": "void*",
+          "name": "userData"
         }
       ]
     }
@@ -12924,6 +12928,25 @@
         {
           "type": "AudioCallback",
           "name": "callback"
+        }
+      ]
+    },
+    {
+      "name": "SetAudioStreamCallbackEX",
+      "description": "Audio thread callback to request new data with user data",
+      "returnType": "void",
+      "params": [
+        {
+          "type": "AudioStream",
+          "name": "stream"
+        },
+        {
+          "type": "AudioCallback",
+          "name": "callback"
+        },
+        {
+          "type": "void*",
+          "name": "userData"
         }
       ]
     },

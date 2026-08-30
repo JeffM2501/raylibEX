@@ -676,12 +676,13 @@
             <Param type="const char *" name="fileName" desc="" />
             <Param type="const char *" name="text" desc="" />
         </Callback>
-        <Callback name="AudioCallback" retType="void" paramCount="2" desc="">
+        <Callback name="AudioCallback" retType="void" paramCount="3" desc="">
             <Param type="void *" name="bufferData" desc="" />
             <Param type="unsigned int" name="frames" desc="" />
+            <Param type="void*" name="userData" desc="" />
         </Callback>
     </Callbacks>
-    <Functions count="617">
+    <Functions count="618">
         <Function name="InitWindow" retType="void" paramCount="3" desc="Initialize window and OpenGL context">
             <Param type="int" name="width" desc="" />
             <Param type="int" name="height" desc="" />
@@ -3315,6 +3316,11 @@
         <Function name="SetAudioStreamCallback" retType="void" paramCount="2" desc="Audio thread callback to request new data">
             <Param type="AudioStream" name="stream" desc="" />
             <Param type="AudioCallback" name="callback" desc="" />
+        </Function>
+        <Function name="SetAudioStreamCallbackEX" retType="void" paramCount="3" desc="Audio thread callback to request new data with user data">
+            <Param type="AudioStream" name="stream" desc="" />
+            <Param type="AudioCallback" name="callback" desc="" />
+            <Param type="void*" name="userData" desc="" />
         </Function>
         <Function name="AttachAudioStreamProcessor" retType="void" paramCount="2" desc="Attach audio stream processor to stream, receives frames x 2 samples as 'float' (stereo)">
             <Param type="AudioStream" name="stream" desc="" />

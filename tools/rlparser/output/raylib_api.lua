@@ -3122,7 +3122,8 @@ return {
       returnType = "void",
       params = {
         {type = "void *", name = "bufferData"},
-        {type = "unsigned int", name = "frames"}
+        {type = "unsigned int", name = "frames"},
+        {type = "void*", name = "userData"}
       }
     }
   },
@@ -8662,6 +8663,16 @@ return {
       params = {
         {type = "AudioStream", name = "stream"},
         {type = "AudioCallback", name = "callback"}
+      }
+    },
+    {
+      name = "SetAudioStreamCallbackEX",
+      description = "Audio thread callback to request new data with user data",
+      returnType = "void",
+      params = {
+        {type = "AudioStream", name = "stream"},
+        {type = "AudioCallback", name = "callback"},
+        {type = "void*", name = "userData"}
       }
     },
     {
