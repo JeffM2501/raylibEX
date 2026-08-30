@@ -5704,10 +5704,19 @@ static Model LoadGLTF(const char *fileName)
                         if (model.meshes[meshIndex].vertices != NULL) TRACELOG(LOG_WARNING, "MODEL: [%s] Vertices attribute data already loaded", fileName);
                         else
                         {
+                            // sometimes there are multiple attributes of different types so something may have allocated this buffer, clear it so we don't leak.
+                            if (model.meshes[meshIndex].vertices != NULL)
+                                RL_FREE(model.meshes[meshIndex].vertices);
+
                             if ((attribute->type == cgltf_type_vec3) && (attribute->component_type == cgltf_component_type_r_32f))
                             {
                                 // Init raylib mesh vertices to copy glTF attribute data
                                 model.meshes[meshIndex].vertexCount = (int)attribute->count;
+
+                                // sometimes there are multiple attributes of different types so something may have allocated this buffer, clear it so we don't leak.
+                                if (model.meshes[meshIndex].vertices != NULL)
+                                    RL_FREE(model.meshes[meshIndex].vertices);
+
                                 model.meshes[meshIndex].vertices = (float *)RL_MALLOC(attribute->count*3*sizeof(float));
 
                                 // Load 3 components of float data type into mesh.vertices
@@ -5783,6 +5792,10 @@ static Model LoadGLTF(const char *fileName)
                         if (model.meshes[meshIndex].normals != NULL) TRACELOG(LOG_WARNING, "MODEL: [%s] Normals attribute data already loaded", fileName);
                         else
                         {
+                            // sometimes there are multiple attributes of different types so something may have allocated this buffer, clear it so we don't leak.
+                            if (model.meshes[meshIndex].normals != NULL)
+                                RL_FREE(model.meshes[meshIndex].normals);
+
                             if ((attribute->type == cgltf_type_vec3) && (attribute->component_type == cgltf_component_type_r_32f))
                             {
                                 // Init raylib mesh normals to copy glTF attribute data
@@ -5883,6 +5896,10 @@ static Model LoadGLTF(const char *fileName)
                         if (model.meshes[meshIndex].tangents != NULL) TRACELOG(LOG_WARNING, "MODEL: [%s] Tangents attribute data already loaded", fileName);
                         else
                         {
+                            // sometimes there are multiple attributes of different types so something may have allocated this buffer, clear it so we don't leak.
+                            if (model.meshes[meshIndex].tangents != NULL)
+                                RL_FREE(model.meshes[meshIndex].tangents);
+
                             if ((attribute->type == cgltf_type_vec4) && (attribute->component_type == cgltf_component_type_r_32f))
                             {
                                 // Init raylib mesh tangent to copy glTF attribute data
@@ -5954,8 +5971,22 @@ static Model LoadGLTF(const char *fileName)
                         else TRACELOG(LOG_WARNING, "MODEL: [%s] Texcoords attribute data format not supported, use vec2 float", fileName);
 
                         int index = mesh->primitives[p].attributes[j].index;
-                        if (index == 0) model.meshes[meshIndex].texcoords = texcoordPtr;
-                        else if (index == 1) model.meshes[meshIndex].texcoords2 = texcoordPtr;
+                        if (index == 0)
+                        {
+                            // sometimes there are multiple attributes of different types so something may have allocated this buffer, clear it so we don't leak.
+                            if (model.meshes[meshIndex].texcoords != NULL)
+                                RL_FREE(model.meshes[meshIndex].texcoords);
+
+                            model.meshes[meshIndex].texcoords = texcoordPtr;
+                        }
+                        else if (index == 1)
+                        {
+                            // sometimes there are multiple attributes of different types so something may have allocated this buffer, clear it so we don't leak.
+                            if (model.meshes[meshIndex].texcoords2 != NULL)
+                                RL_FREE(model.meshes[meshIndex].texcoords2);
+
+                            model.meshes[meshIndex].texcoords2 = texcoordPtr;
+                        }
                         else
                         {
                             TRACELOG(LOG_WARNING, "MODEL: [%s] No more than 2 texture coordinates attributes supported", fileName);
@@ -5971,6 +6002,10 @@ static Model LoadGLTF(const char *fileName)
                         if (model.meshes[meshIndex].colors != NULL) TRACELOG(LOG_WARNING, "MODEL: [%s] Colors attribute data already loaded", fileName);
                         else
                         {
+                            // sometimes there are multiple attributes of different types so something may have allocated this buffer, clear it so we don't leak.
+                            if (model.meshes[meshIndex].colors != NULL)
+                                RL_FREE(model.meshes[meshIndex].colors);
+
                             if (attribute->type == cgltf_type_vec3) // RGB
                             {
                                 if (attribute->component_type == cgltf_component_type_r_8u)
@@ -6092,6 +6127,9 @@ static Model LoadGLTF(const char *fileName)
                     if (model.meshes[meshIndex].indices != NULL) TRACELOG(LOG_WARNING, "MODEL: [%s] Indices attribute data already loaded", fileName);
                     else
                     {
+                        if (model.meshes[meshIndex].indices != NULL)
+                            RL_FREE(model.meshes[meshIndex].indices);
+
                         if (attribute->component_type == cgltf_component_type_r_16u)
                         {
                             // Init raylib mesh indices to copy glTF attribute data
