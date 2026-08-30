@@ -323,6 +323,8 @@ typedef struct CoreData {
         char **dropFilepaths;               // Store dropped files paths pointers (provided by GLFW)
         unsigned int dropFileCount;         // Count dropped files strings
 
+        bool(*updateCallback)(void);        // Optional user defined callback to draw a frame
+        bool wasDirtyThisFrame;
     } Window;
     struct {
         const char *basePath;               // Base path for data storage
@@ -744,6 +746,33 @@ void CloseWindow(void)
 
     CORE.Window.ready = false;
     TRACELOG(LOG_INFO, "Window closed successfully");
+}
+
+void ProcessSingleFrame(void)
+{
+    // if the dirty callback rendered this frame, don't double render, skip it until the next frame
+    if (CORE.Window.wasDirtyThisFrame)
+    {
+        CORE.Window.wasDirtyThisFrame = false;
+        return;
+    }
+
+    BeginDrawing();
+    if (!CORE.Window.updateCallback()) CORE.Window.updateCallback = NULL;
+    EndDrawing();
+
+#if SUPPORT_CUSTOM_FRAME_CONTROL
+    SwapScreenBuffer();
+    PollInputEvents();
+#endif
+}
+
+void PlatformRunGameLoop();
+
+void RunGameLoop(bool(*processFrame)(void))
+{    
+    CORE.Window.updateCallback = processFrame;
+    PlatformRunGameLoop();
 }
 
 // Check if window has been initialized successfully

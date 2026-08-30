@@ -1612,4 +1612,15 @@ static int android_close(void *cookie)
     return 0;
 }
 
+extern void ProcessSingleFrame();
+
+void PlatformRunGameLoop()
+{
+    while (CORE.Window.updateCallback != NULL)
+    {
+        ProcessSingleFrame();
+    }
+}
+
+
 // EOF

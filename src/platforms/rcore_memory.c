@@ -591,4 +591,15 @@ static int kbhit(void)
 }
 #endif
 
+extern void ProcessSingleFrame();
+
+void PlatformRunGameLoop()
+{
+    while (CORE.Window.updateCallback != NULL)
+    {
+        ProcessSingleFrame();
+    }
+}
+
+
 // EOF

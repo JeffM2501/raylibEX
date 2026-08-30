@@ -144,6 +144,7 @@ static void WindowIconifyCallback(GLFWwindow *window, int iconified);           
 static void WindowMaximizeCallback(GLFWwindow *window, int maximized);                  // GLFW3 Window Maximize Callback, runs when window is maximized
 static void WindowFocusCallback(GLFWwindow *window, int focused);                       // GLFW3 WindowFocus Callback, runs when window get/lose focus
 static void WindowDropCallback(GLFWwindow *window, int count, const char **paths);      // GLFW3 Window Drop Callback, runs when drop files into window
+static void WindowRefreshCallback(GLFWwindow* window);                                  // GLFW3 Window Refresh Callback, runs when window content needs to be refreshed
 
 // Input callbacks events
 static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods); // GLFW3 Keyboard Callback, runs on key pressed
@@ -1449,6 +1450,56 @@ static void DeallocateWrapper(void *block, void *user)
     RL_FREE(block);
 }
 
+double LastRefreshTime = -100;
+
+void WindowRefreshCallback(GLFWwindow* window)
+{
+    if (window != platform.handle || CORE.Window.updateCallback == NULL)
+    {
+        return;
+    }
+
+    double now = GetTime();
+
+    // if we have a FPS cap, try to clamp to it during refresh events
+    if (CORE.Time.target > 0)
+    {
+        double delta = now - LastRefreshTime;
+        if (delta < CORE.Time.target)
+        {
+            return;
+        }
+        LastRefreshTime = now;
+    }
+
+    CORE.Time.current = now;      // Number of elapsed seconds since InitTimer()
+    CORE.Time.update = CORE.Time.current - CORE.Time.previous;
+    CORE.Time.previous = CORE.Time.current;
+
+    rlLoadIdentity();                   // Reset current matrix (modelview)
+    rlMultMatrixf(MatrixToFloat(CORE.Window.screenScale)); // Apply screen scaling
+    
+    CORE.Window.updateCallback();
+
+    rlDrawRenderBatchActive();
+
+    SwapScreenBuffer();
+    CORE.Time.current = GetTime();
+    CORE.Time.draw = CORE.Time.current - CORE.Time.previous;
+    CORE.Time.previous = CORE.Time.current;
+
+    // Frame time control system
+    CORE.Time.current = GetTime();
+    CORE.Time.draw = CORE.Time.current - CORE.Time.previous;
+    CORE.Time.previous = CORE.Time.current;
+
+    CORE.Time.frame = CORE.Time.update + CORE.Time.draw;
+
+    CORE.Time.frameCounter++;
+
+    CORE.Window.wasDirtyThisFrame = true;
+}
+
 // Initialize platform: graphics, inputs and more
 int InitPlatform(void)
 {
@@ -1833,6 +1884,7 @@ int InitPlatform(void)
     glfwSetWindowIconifyCallback(platform.handle, WindowIconifyCallback);
     glfwSetWindowFocusCallback(platform.handle, WindowFocusCallback);
     glfwSetDropCallback(platform.handle, WindowDropCallback);
+    glfwSetWindowRefreshCallback(platform.handle, WindowRefreshCallback);
     if (FLAG_IS_SET(CORE.Window.flags, FLAG_WINDOW_HIGHDPI)) glfwSetWindowContentScaleCallback(platform.handle, WindowContentScaleCallback);
 
     // Set input callback events
@@ -2023,6 +2075,7 @@ static void WindowPosCallback(GLFWwindow *window, int x, int y)
     // Set current window position
     CORE.Window.position.x = x;
     CORE.Window.position.y = y;
+    WindowRefreshCallback(window);  // Force window refresh on position change
 }
 
 // GLFW3: Window iconify callback, runs when window is minimized/restored
@@ -2229,4 +2282,22 @@ static void JoystickCallback(int jid, int event)
 #   define WIN32_CLIPBOARD_IMPLEMENTATION
 #   include "../external/win32_clipboard.h"
 #endif
+
+extern void ProcessSingleFrame();
+#if defined(PLATFORM_WEB)
+#include <emscripten.h>
+#endif
+
+void PlatformRunGameLoop()
+{
+#if defined(PLATFORM_WEB)
+    emscripten_set_main_loop(ProcessSingleFrame, 0, 1);
+#else
+    while (CORE.Window.updateCallback != NULL)
+    {
+        ProcessSingleFrame();
+    }
+#endif
+}
+
 // EOF
