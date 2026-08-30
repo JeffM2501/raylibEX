@@ -1,0 +1,112 @@
+name: Upstream Sync (Rebase)
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Daily at 00:00 UTC
+  workflow_dispatch: # Allows manual trigger
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch Upstream
+        run: |
+          git remote add upstream https://github.com/raysan5/raylib.git
+          git fetch upstream master
+
+      - name: Check for new commits
+        id: check-commits
+        run: |
+          # Check if upstream master has commits not in master
+          NEW_COMMITS=$(git log HEAD..upstream/master --oneline)
+          if [ -z "$NEW_COMMITS" ]; then
+            echo "No new commits on upstream master. Sync not required."
+            echo "sync_needed=false" >> $GITHUB_OUTPUT
+          else
+            echo "New commits found on upstream master."
+            echo "sync_needed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Prepare Sync Variables
+        if: steps.check-commits.outputs.sync_needed == 'true'
+        id: vars
+        run: |
+          SYNC_DATE=$(date +'%Y%m%d')
+          TEMP_BRANCH="sync-upstream-${SYNC_DATE}"
+          echo "sync_date=${SYNC_DATE}" >> $GITHUB_OUTPUT
+          echo "temp_branch=${TEMP_BRANCH}" >> $GITHUB_OUTPUT
+
+      - name: Rebase and Push / Handle Conflicts
+        if: steps.check-commits.outputs.sync_needed == 'true'
+        run: |
+          TEMP_BRANCH="${{ steps.vars.outputs.temp_branch }}"
+          
+          # Create and checkout dated temp branch from current master
+          git checkout -b "$TEMP_BRANCH"
+
+          # Attempt to rebase onto upstream/master
+          if git rebase upstream/master; then
+            echo "Rebase succeeded without conflicts."
+            # Checkout master and merge temp branch (fast-forward)
+            git checkout master
+            git merge --ff-only "$TEMP_BRANCH"
+            git push origin master --force
+          else
+            echo "Rebase failed due to conflicts."
+            git status > conflict_status.txt
+            git rebase --abort
+            
+            # Push the clean temp branch to origin
+            git push origin "$TEMP_BRANCH" --force
+            exit 1
+          fi
+
+      - name: Create Issue on Failure
+        if: failure() && steps.check-commits.outputs.sync_needed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TEMP_BRANCH: ${{ steps.vars.outputs.temp_branch }}
+          SYNC_DATE: ${{ steps.vars.outputs.sync_date }}
+        run: |
+          TITLE="Sync with upstream raylib failed due to merge conflicts (${SYNC_DATE})"
+          
+          # Check if an issue with the same title is already open
+          EXISTING_ISSUE=$(gh issue list --state open --json title,number | jq -r --arg title "$TITLE" '.[] | select(.title == $title) | .number' | head -n 1)
+          if [ -n "$EXISTING_ISSUE" ]; then
+            echo "An open issue already exists for this failure: #${EXISTING_ISSUE}. Skipping creation."
+            exit 0
+          fi
+          
+          BODY="The daily synchronization with upstream raylib master repository failed due to merge conflicts.
+
+          ### Details:
+          - **Date**: ${SYNC_DATE}
+          - **Temporary Branch**: \`${TEMP_BRANCH}\` (pushed to origin)
+
+          ### Conflict Status:
+          \`\`\`
+          $(cat conflict_status.txt 2>/dev/null || echo "Could not read conflict status.")
+          \`\`\`
+
+          ### Action Required:
+          1. Checkout the temporary branch: \`git checkout ${TEMP_BRANCH}\`
+          2. Rebase onto upstream master manually: \`git rebase upstream/master\`
+          3. Resolve conflicts, finish rebase, and merge back to master.
+          4. Force push master to origin and delete the temporary branch."
+
+          gh issue create --title "${TITLE}" --body "${BODY}"
