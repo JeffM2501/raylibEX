@@ -67,7 +67,7 @@ jobs:
         cd ${{ env.RELEASE_NAME }}
         mkdir include
         mkdir lib
-        cd ../../../raylib
+        cd ../../../raylibEX
         # ${{ matrix.ARCH }}-linux-gnu-gcc -v
 
     - name: Setup Environment (x86)
