@@ -753,6 +753,7 @@ RLAPI void rlDrawVertexArray(int offset, int count);    // Draw vertex array (cu
 RLAPI void rlDrawVertexArrayElements(int offset, int count, const void *buffer); // Draw vertex array elements
 RLAPI void rlDrawVertexArrayInstanced(int offset, int count, int instances); // Draw vertex array (currently active vao) with instancing
 RLAPI void rlDrawVertexArrayElementsInstanced(int offset, int count, const void *buffer, int instances); // Draw vertex array elements with instancing
+RLAPI int rlGetMaxVertexAttributes(void);
 
 // Textures management
 RLAPI unsigned int rlLoadTexture(const void *data, int width, int height, int format, int mipmapCount); // Load texture data
@@ -1100,6 +1101,7 @@ typedef struct rlglData {
 
         float maxAnisotropyLevel;           // Maximum anisotropy level supported (minimum is 2.0f)
         int maxDepthBits;                   // Maximum bits for depth component
+        int maxAttributes;                  // Maximum number of attributes supported
 
     } ExtSupported;     // Extensions supported flags
 } rlglData;
@@ -2394,6 +2396,8 @@ void rlLoadExtensions(void *loader)
     for (int i = 0; i < numExt; i++) TRACELOG(RL_LOG_INFO, "    %s", glGetStringi(GL_EXTENSIONS, i));
 #endif
 
+    RLGL.ExtSupported.maxAttributes = 0;
+
 #if defined(GRAPHICS_API_OPENGL_21)
     // Register supported extensions flags
     // Optional OpenGL 2.1 extensions
@@ -2429,6 +2433,7 @@ void rlLoadExtensions(void *loader)
     RLGL.ExtSupported.ssbo = GLAD_GL_ARB_shader_storage_buffer_object;
     #endif
 
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &RLGL.ExtSupported.maxAttributes);
 #endif // GRAPHICS_API_OPENGL_33
 
 #if defined(GRAPHICS_API_OPENGL_ES3)
@@ -4127,6 +4132,12 @@ void rlDisableStatePointer(int vertexAttribType)
 #if defined(GRAPHICS_API_OPENGL_11)
     glDisableClientState(vertexAttribType);
 #endif
+}
+
+// return the max number of vertex attributes the GPU supports
+int rlGetMaxVertexAttributes(void)
+{
+    return RLGL.ExtSupported.maxAttributes;
 }
 
 // Load vertex array object (VAO)
