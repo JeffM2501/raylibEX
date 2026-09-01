@@ -477,7 +477,8 @@ typedef enum {
     RL_PIXELFORMAT_COMPRESSED_PVRT_RGB,            // 4 bpp
     RL_PIXELFORMAT_COMPRESSED_PVRT_RGBA,           // 4 bpp
     RL_PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA,       // 8 bpp
-    RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA        // 2 bpp
+    RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA,       // 2 bpp
+    RL_PIXELFORMAT_UNCOMPRESSED_R32I               // 32 bpp (1 channel - int)
 } rlPixelFormat;
 
 // Texture parameters: filter mode
@@ -1089,6 +1090,7 @@ typedef struct rlglData {
         bool texDepthWebGL;                 // Depth textures supported WebGL specific (GL_WEBGL_depth_texture)
         bool texFloat32;                    // float textures support (32 bit per channel) (GL_OES_texture_float)
         bool texFloat16;                    // half float textures support (16 bit per channel) (GL_OES_texture_half_float)
+        bool texInt32;                      // int textures support (32 bit per channel) (GL_EXT_texture_integer)
         bool texCompDXT;                    // DDS texture compression support (GL_EXT_texture_compression_s3tc, GL_WEBGL_compressed_texture_s3tc, GL_WEBKIT_WEBGL_compressed_texture_s3tc)
         bool texCompETC1;                   // ETC1 texture compression support (GL_OES_compressed_ETC1_RGB8_texture, GL_WEBGL_compressed_texture_etc1)
         bool texCompETC2;                   // ETC2/EAC texture compression support (GL_ARB_ES3_compatibility)
@@ -2421,6 +2423,7 @@ void rlLoadExtensions(void *loader)
     RLGL.ExtSupported.texDepth = true;
     RLGL.ExtSupported.maxDepthBits = 32;
     RLGL.ExtSupported.texAnisoFilter = true;
+    RLGL.ExtSupported.texInt32 = true;
     RLGL.ExtSupported.texMirrorClamp = true;
 #endif
 
@@ -3610,13 +3613,13 @@ void rlGetGlTextureFormats(int format, unsigned int *glInternalFormat, unsigned 
         case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8: *glInternalFormat = GL_RGBA; *glFormat = GL_RGBA; *glType = GL_UNSIGNED_BYTE; break;
         #if !defined(GRAPHICS_API_OPENGL_11)
         #if defined(GRAPHICS_API_OPENGL_ES3)
-        case RL_PIXELFORMAT_UNCOMPRESSED_R32: if (RLGL.ExtSupported.texFloat32) *glInternalFormat = GL_R32F_EXT; *glFormat = GL_RED_EXT; *glType = GL_FLOAT; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32: if (RLGL.ExtSupported.texFloat32) *glInternalFormat = GL_RGB32F_EXT; *glFormat = GL_RGB; *glType = GL_FLOAT; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32: if (RLGL.ExtSupported.texFloat32) *glInternalFormat = GL_RGBA32F_EXT; *glFormat = GL_RGBA; *glType = GL_FLOAT; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R16: if (RLGL.ExtSupported.texFloat16) *glInternalFormat = GL_R16F_EXT; *glFormat = GL_RED_EXT; *glType = GL_HALF_FLOAT; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R16G16B16: if (RLGL.ExtSupported.texFloat16) *glInternalFormat = GL_RGB16F_EXT; *glFormat = GL_RGB; *glType = GL_HALF_FLOAT; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R16G16B16A16: if (RLGL.ExtSupported.texFloat16) *glInternalFormat = GL_RGBA16F_EXT; *glFormat = GL_RGBA; *glType = GL_HALF_FLOAT; break;
         #else
+        case RL_PIXELFORMAT_UNCOMPRESSED_R32I: if (RLGL.ExtSupported.texInt32) *glInternalFormat = GL_LUMINANCE; *glFormat = GL_LUMINANCE; *glType = GL_INT; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32: if (RLGL.ExtSupported.texFloat32) *glInternalFormat = GL_LUMINANCE; *glFormat = GL_LUMINANCE; *glType = GL_FLOAT; break;            // NOTE: Requires extension OES_texture_float
         case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32: if (RLGL.ExtSupported.texFloat32) *glInternalFormat = GL_RGB; *glFormat = GL_RGB; *glType = GL_FLOAT; break;                  // NOTE: Requires extension OES_texture_float
         case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32: if (RLGL.ExtSupported.texFloat32) *glInternalFormat = GL_RGBA; *glFormat = GL_RGBA; *glType = GL_FLOAT; break;             // NOTE: Requires extension OES_texture_float
@@ -3640,6 +3643,7 @@ void rlGetGlTextureFormats(int format, unsigned int *glInternalFormat, unsigned 
         case RL_PIXELFORMAT_UNCOMPRESSED_R4G4B4A4: *glInternalFormat = GL_RGBA4; *glFormat = GL_RGBA; *glType = GL_UNSIGNED_SHORT_4_4_4_4; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8: *glInternalFormat = GL_RGBA8; *glFormat = GL_RGBA; *glType = GL_UNSIGNED_BYTE; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32: if (RLGL.ExtSupported.texFloat32) *glInternalFormat = GL_R32F; *glFormat = GL_RED; *glType = GL_FLOAT; break;
+        case RL_PIXELFORMAT_UNCOMPRESSED_R32I: if (RLGL.ExtSupported.texInt32) *glInternalFormat = GL_R32I; *glFormat = GL_RED; *glType = GL_INT; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32: if (RLGL.ExtSupported.texFloat32) *glInternalFormat = GL_RGB32F; *glFormat = GL_RGB; *glType = GL_FLOAT; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32: if (RLGL.ExtSupported.texFloat32) *glInternalFormat = GL_RGBA32F; *glFormat = GL_RGBA; *glType = GL_FLOAT; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R16: if (RLGL.ExtSupported.texFloat16) *glInternalFormat = GL_R16F; *glFormat = GL_RED; *glType = GL_HALF_FLOAT; break;
@@ -5238,6 +5242,7 @@ static int rlGetPixelDataSize(int width, int height, int format)
         case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8: bpp = 32; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8: bpp = 24; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32: bpp = 32; break;
+        case PIXELFORMAT_UNCOMPRESSED_R32I: bpp = 32; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32: bpp = 32*3; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32: bpp = 32*4; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R16: bpp = 16; break;

@@ -1728,6 +1728,12 @@ Image ImageFromChannel(Image image, int selectedChannel)
                     k += 1;
 
                 } break;
+                case PIXELFORMAT_UNCOMPRESSED_R32I:
+                {
+                    pixelValue = ((unsigned int*)image.data)[k] / (double)0xFFFFFFFF;
+                    k += 1;
+
+                } break;
                 case PIXELFORMAT_UNCOMPRESSED_R32G32B32:
                 {
                     pixelValue = ((float *)image.data)[k + selectedChannel];
@@ -3019,7 +3025,8 @@ Color *LoadImageColors(Image image)
     if (image.format >= PIXELFORMAT_COMPRESSED_DXT1_RGB) TRACELOG(LOG_WARNING, "IMAGE: Pixel data retrieval not supported for compressed image formats");
     else
     {
-        if ((image.format == PIXELFORMAT_UNCOMPRESSED_R32) ||
+        if ((image.format == PIXELFORMAT_UNCOMPRESSED_R32I) ||
+            (image.format == PIXELFORMAT_UNCOMPRESSED_R32) ||
             (image.format == PIXELFORMAT_UNCOMPRESSED_R32G32B32) ||
             (image.format == PIXELFORMAT_UNCOMPRESSED_R32G32B32A32)) TRACELOG(LOG_WARNING, "IMAGE: Pixel format converted from 32bit to 8bit per channel");
 
@@ -3099,6 +3106,15 @@ Color *LoadImageColors(Image image)
                 case PIXELFORMAT_UNCOMPRESSED_R32:
                 {
                     pixels[i].r = (unsigned char)(((float *)image.data)[k]*255.0f);
+                    pixels[i].g = 0;
+                    pixels[i].b = 0;
+                    pixels[i].a = 255;
+
+                    k += 1;
+                } break;
+                case PIXELFORMAT_UNCOMPRESSED_R32I:
+                {
+                    pixels[i].r = (unsigned char)(((unsigned int*)image.data)[k] / (double)0xFFFFFFFF * 255.0f);
                     pixels[i].g = 0;
                     pixels[i].b = 0;
                     pixels[i].a = 255;
@@ -3346,6 +3362,13 @@ Color GetImageColor(Image image, int x, int y)
                 color.a = 255;
 
             } break;
+            case PIXELFORMAT_UNCOMPRESSED_R32I:
+            {
+                color.r = (unsigned char)(((unsigned int*)image.data)[y * image.width + x] / (double)0xFFFFFFFF * 255.0f);
+                color.g = 0;
+                color.b = 0;
+                color.a = 255;
+            } break;
             case PIXELFORMAT_UNCOMPRESSED_R32G32B32:
             {
                 color.r = (unsigned char)(((float *)image.data)[(y*image.width + x)*3]*255.0f);
@@ -3507,6 +3530,12 @@ void ImageDrawPixel(Image *dst, int x, int y, Color color)
 
             ((float *)dst->data)[y*dst->width + x] = coln.x*0.299f + coln.y*0.587f + coln.z*0.114f;
 
+        } break;
+        case PIXELFORMAT_UNCOMPRESSED_R32I:
+        {
+            // NOTE: Calculate grayscale equivalent color (normalized to 32bit)
+            Vector3 coln = { (float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f };
+            ((int*)dst->data)[y * dst->width + x] = (int)((coln.x * 0.299f + coln.y * 0.587f + coln.z * 0.114f) * 0xFFFFFFFF);
         } break;
         case PIXELFORMAT_UNCOMPRESSED_R32G32B32:
         {
@@ -4135,6 +4164,7 @@ void ImageDrawImagePro(Image *dst, Image src, Rectangle srcRec, Rectangle dstRec
             (srcPtr->format == PIXELFORMAT_UNCOMPRESSED_R5G6B5) ||
             (srcPtr->format == PIXELFORMAT_UNCOMPRESSED_R8G8B8) ||
             (srcPtr->format == PIXELFORMAT_UNCOMPRESSED_R32) ||
+            (srcPtr->format == PIXELFORMAT_UNCOMPRESSED_R32I) ||
             (srcPtr->format == PIXELFORMAT_UNCOMPRESSED_R32G32B32) ||
             (srcPtr->format == PIXELFORMAT_UNCOMPRESSED_R16) ||
             (srcPtr->format == PIXELFORMAT_UNCOMPRESSED_R16G16B16)))
@@ -5363,6 +5393,14 @@ Color GetPixelColor(const void *srcPtr, int format)
             color.a = 255;
 
         } break;
+        case PIXELFORMAT_UNCOMPRESSED_R32I:
+        {
+            // NOTE: Pixel normalized float value is converted to [0..255]
+            color.r = (unsigned char)(((unsigned int*)srcPtr)[0] / (double)0xFFFFFFFF * 255.0f);
+            color.g = color.r;
+            color.b = color.b;
+            color.a = 255;
+        } break;
         case PIXELFORMAT_UNCOMPRESSED_R32G32B32:
         {
             // NOTE: Pixel normalized float value is converted to [0..255]
@@ -5512,6 +5550,7 @@ int GetPixelDataSize(int width, int height, int format)
         case PIXELFORMAT_UNCOMPRESSED_R8G8B8A8: bpp = 32; break;
         case PIXELFORMAT_UNCOMPRESSED_R8G8B8: bpp = 24; break;
         case PIXELFORMAT_UNCOMPRESSED_R32: bpp = 32; break;
+        case PIXELFORMAT_UNCOMPRESSED_R32I: bpp = 32; break;
         case PIXELFORMAT_UNCOMPRESSED_R32G32B32: bpp = 32*3; break;
         case PIXELFORMAT_UNCOMPRESSED_R32G32B32A32: bpp = 32*4; break;
         case PIXELFORMAT_UNCOMPRESSED_R16: bpp = 16; break;
@@ -5677,6 +5716,15 @@ static Vector4 *LoadImageDataNormalized(Image image)
                 case PIXELFORMAT_UNCOMPRESSED_R32:
                 {
                     pixels[i].x = ((float *)image.data)[k];
+                    pixels[i].y = 0.0f;
+                    pixels[i].z = 0.0f;
+                    pixels[i].w = 1.0f;
+
+                    k += 1;
+                } break; 
+                case PIXELFORMAT_UNCOMPRESSED_R32I:
+                {
+                    pixels[i].x = ((unsigned int*)image.data)[k] / (float)0xFFFFFFFF;
                     pixels[i].y = 0.0f;
                     pixels[i].z = 0.0f;
                     pixels[i].w = 1.0f;
