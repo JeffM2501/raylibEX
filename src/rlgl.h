@@ -5273,7 +5273,7 @@ static int rlGetPixelDataSize(int width, int height, int format)
         case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8: bpp = 32; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8: bpp = 24; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32: bpp = 32; break;
-        case PIXELFORMAT_UNCOMPRESSED_R32I: bpp = 32; break;
+        case RL_PIXELFORMAT_UNCOMPRESSED_R32I: bpp = 32; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32: bpp = 32*3; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32: bpp = 32*4; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R16: bpp = 16; break;
