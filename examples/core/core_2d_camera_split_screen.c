@@ -50,7 +50,7 @@ int main(void)
     camera2.zoom = 1.0f;
 
     RenderTexture screenCamera1 = LoadRenderTexture(screenWidth/2, screenHeight);
-    RenderTexture screenCamera2 = LoadRenderTexture(screenWidth/2, screenHeight);
+    RenderTexture screenCamera2 = LoadRenderTextureEx(screenWidth/2, screenHeight, PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA, 16);
 
     // Build a flipped rectangle the size of the split view to use for drawing later
     Rectangle splitScreenRect = { 0.0f, 0.0f, (float)screenCamera1.texture.width, (float)-screenCamera1.texture.height };
