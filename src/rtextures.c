@@ -1730,7 +1730,7 @@ Image ImageFromChannel(Image image, int selectedChannel)
                 } break;
                 case PIXELFORMAT_UNCOMPRESSED_R32I:
                 {
-                    pixelValue = ((unsigned int*)image.data)[k] / (double)0xFFFFFFFF;
+                    pixelValue = ((int*)image.data)[k] / (double)0x7FFFFFFF;
                     k += 1;
 
                 } break;
@@ -3114,7 +3114,7 @@ Color *LoadImageColors(Image image)
                 } break;
                 case PIXELFORMAT_UNCOMPRESSED_R32I:
                 {
-                    pixels[i].r = (unsigned char)(((unsigned int*)image.data)[k] / (double)0xFFFFFFFF * 255.0f);
+                    pixels[i].r = (unsigned char)(((int*)image.data)[k] / (double)0x7FFFFFFF* 255.0f);
                     pixels[i].g = 0;
                     pixels[i].b = 0;
                     pixels[i].a = 255;
@@ -3364,7 +3364,7 @@ Color GetImageColor(Image image, int x, int y)
             } break;
             case PIXELFORMAT_UNCOMPRESSED_R32I:
             {
-                color.r = (unsigned char)(((unsigned int*)image.data)[y * image.width + x] / (double)0xFFFFFFFF * 255.0f);
+                color.r = (unsigned char)(((int*)image.data)[y * image.width + x] / (double)0x7FFFFFFF * 255.0f);
                 color.g = 0;
                 color.b = 0;
                 color.a = 255;
@@ -3535,7 +3535,7 @@ void ImageDrawPixel(Image *dst, int x, int y, Color color)
         {
             // NOTE: Calculate grayscale equivalent color (normalized to 32bit)
             Vector3 coln = { (float)color.r / 255.0f, (float)color.g / 255.0f, (float)color.b / 255.0f };
-            ((int*)dst->data)[y * dst->width + x] = (int)((coln.x * 0.299f + coln.y * 0.587f + coln.z * 0.114f) * 0xFFFFFFFF);
+            ((int*)dst->data)[y * dst->width + x] = (int)((coln.x * 0.299f + coln.y * 0.587f + coln.z * 0.114f) * 0x7FFFFFFF);
         } break;
         case PIXELFORMAT_UNCOMPRESSED_R32G32B32:
         {
@@ -5400,7 +5400,7 @@ Color GetPixelColor(const void *srcPtr, int format)
         case PIXELFORMAT_UNCOMPRESSED_R32I:
         {
             // NOTE: Pixel normalized float value is converted to [0..255]
-            color.r = (unsigned char)(((unsigned int*)srcPtr)[0] / (double)0xFFFFFFFF * 255.0f);
+            color.r = (unsigned char)(((int*)srcPtr)[0] / (double)0x7FFFFFFF * 255.0f);
             color.g = color.r;
             color.b = color.b;
             color.a = 255;
@@ -5728,7 +5728,7 @@ static Vector4 *LoadImageDataNormalized(Image image)
                 } break; 
                 case PIXELFORMAT_UNCOMPRESSED_R32I:
                 {
-                    pixels[i].x = ((unsigned int*)image.data)[k] / (float)0xFFFFFFFF;
+                    pixels[i].x = ((int*)image.data)[k] / (float)0x7FFFFFFF;
                     pixels[i].y = 0.0f;
                     pixels[i].z = 0.0f;
                     pixels[i].w = 1.0f;
