@@ -4,6 +4,14 @@
 
 raylib is highly inspired by Borland BGI graphics lib and by XNA framework and it's especially well suited for prototyping, tooling, graphical applications, embedded systems and education.
 
+Experimental !
+---
+This is an experimental fork of raylib that has additional features that are not included in the base release. It is synced with the raylib master repository nightly, but has additional changes and API features that have not yet been, or will never be merged into upstream raylib.
+Use at your own risk. 
+
+  `Extra features have not been tested on all platforms. Only desktop PC platforms are tested regularly.`
+
+---
 *NOTE for ADVENTURERS: raylib is a programming library to enjoy videogames programming; no fancy interface, no visual helpers, no debug button... just coding in the most pure spartan-programmers way.*
 
 Ready to learn? Jump to [code examples!](https://www.raylib.com/examples.html)
