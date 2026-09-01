@@ -596,6 +596,13 @@ typedef enum {
     RL_CULL_FACE_BACK
 } rlCullMode;
 
+#define RL_DEPTH_BUFFER_DEFAULT 0
+#define RL_DEPTH_BUFFER_NONE 0
+#define RL_DEPTH_BUFFER_16BIT 16
+#define RL_DEPTH_BUFFER_24BIT 24
+#define RL_DEPTH_BUFFER_32BIT 32
+#define RL_DEPTH_BUFFER_32BITF 33
+
 //------------------------------------------------------------------------------------
 // Functions Declaration - Matrix operations
 //------------------------------------------------------------------------------------
@@ -759,6 +766,7 @@ RLAPI int rlGetMaxVertexAttributes(void);
 // Textures management
 RLAPI unsigned int rlLoadTexture(const void *data, int width, int height, int format, int mipmapCount); // Load texture data
 RLAPI unsigned int rlLoadTextureDepth(int width, int height, bool useRenderBuffer); // Load depth texture/renderbuffer (to be attached to fbo)
+RLAPI unsigned int rlLoadTextureDepthEx(int width, int height, bool useRenderBuffer, int bits); // Load depth texture/renderbuffer (to be attached to fbo), with specified bit depth
 RLAPI unsigned int rlLoadTextureCubemap(const void *data, int size, int format, int mipmapCount); // Load texture cubemap data
 RLAPI void rlUpdateTexture(unsigned int id, int offsetX, int offsetY, int width, int height, int format, const void *data); // Update texture with new data on GPU
 RLAPI void rlGetGlTextureFormats(int format, unsigned int *glInternalFormat, unsigned int *glFormat, unsigned int *glType); // Get OpenGL internal formats
@@ -3411,6 +3419,13 @@ unsigned int rlLoadTexture(const void *data, int width, int height, int format, 
 // WARNING: OpenGL ES 2.0 requires GL_OES_depth_texture and WebGL requires WEBGL_depth_texture extensions
 unsigned int rlLoadTextureDepth(int width, int height, bool useRenderBuffer)
 {
+    return rlLoadTextureDepthEx(width, height, useRenderBuffer, -1);
+}
+
+// Load depth texture/renderbuffer (to be attached to fbo), with the specified bit depth (16, 24 or 32 bits, < 0 uses default > 32 uses GL_DEPTH_COMPONENT32F)
+// WARNING: OpenGL ES 2.0 requires GL_OES_depth_texture and WebGL requires WEBGL_depth_texture extensions
+unsigned int rlLoadTextureDepthEx(int width, int height, bool useRenderBuffer, int bits)
+{
     unsigned int id = 0;
     if (!isGpuReady) { TRACELOG(RL_LOG_WARNING, "GL: GPU is not ready to load data, trying to load before InitWindow()?"); return id; }
 
@@ -3422,23 +3437,33 @@ unsigned int rlLoadTextureDepth(int width, int height, bool useRenderBuffer)
     // Possible formats: GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT32 and GL_DEPTH_COMPONENT32F
     unsigned int glInternalFormat = GL_DEPTH_COMPONENT;
 
-#if defined(GRAPHICS_API_OPENGL_ES2)
-    // WARNING: WebGL platform requires unsized internal format definition (GL_DEPTH_COMPONENT)
-    // while other platforms using OpenGL ES 2.0 require/support sized internal formats depending on the GPU capabilities
-    if (!RLGL.ExtSupported.texDepthWebGL || useRenderBuffer)
+    if (bits > 0)
     {
-        if (RLGL.ExtSupported.maxDepthBits == 32) glInternalFormat = GL_DEPTH_COMPONENT32_OES;
-        else if (RLGL.ExtSupported.maxDepthBits == 24) glInternalFormat = GL_DEPTH_COMPONENT24_OES;
-        else glInternalFormat = GL_DEPTH_COMPONENT16;
+        if (bits == 32) glInternalFormat = GL_DEPTH_COMPONENT32;
+        else if (bits == 24) glInternalFormat = GL_DEPTH_COMPONENT24;
+        else if (bits == 16) glInternalFormat = GL_DEPTH_COMPONENT16;
+        if (bits > 32) glInternalFormat = GL_DEPTH_COMPONENT32F;
     }
+    else
+    {
+#if defined(GRAPHICS_API_OPENGL_ES2)
+        // WARNING: WebGL platform requires unsized internal format definition (GL_DEPTH_COMPONENT)
+        // while other platforms using OpenGL ES 2.0 require/support sized internal formats depending on the GPU capabilities
+        if (!RLGL.ExtSupported.texDepthWebGL || useRenderBuffer)
+        {
+            if (RLGL.ExtSupported.maxDepthBits == 32) glInternalFormat = GL_DEPTH_COMPONENT32_OES;
+            else if (RLGL.ExtSupported.maxDepthBits == 24) glInternalFormat = GL_DEPTH_COMPONENT24_OES;
+            else glInternalFormat = GL_DEPTH_COMPONENT16;
+        }
 #endif
 #if defined(GRAPHICS_API_OPENGL_ES3)
-    // NOTE: This sized internal format should also work for WebGL 2.0
-    // WARNING: Specification only allows GL_DEPTH_COMPONENT32F for GL_FLOAT type
-    // REF: https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glTexImage2D.xhtml
-    if (RLGL.ExtSupported.maxDepthBits == 24) glInternalFormat = GL_DEPTH_COMPONENT24;
-    else glInternalFormat = GL_DEPTH_COMPONENT16;
+        // NOTE: This sized internal format should also work for WebGL 2.0
+        // WARNING: Specification only allows GL_DEPTH_COMPONENT32F for GL_FLOAT type
+        // REF: https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glTexImage2D.xhtml
+        if (RLGL.ExtSupported.maxDepthBits == 24) glInternalFormat = GL_DEPTH_COMPONENT24;
+        else glInternalFormat = GL_DEPTH_COMPONENT16;
 #endif
+    }
 
     if (!useRenderBuffer && RLGL.ExtSupported.texDepth)
     {

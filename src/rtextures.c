@@ -4422,12 +4422,12 @@ TextureCubemap LoadTextureCubemap(Image image, int layout)
 // NOTE: Render texture is loaded by default with RGBA color attachment and depth RenderBuffer
 RenderTexture2D LoadRenderTexture(int width, int height)
 {
-    return LoadRenderTextureEx(width, height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+    return LoadRenderTextureEx(width, height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, -1);
 }
 
 // Load texture for rendering (framebuffer), advanced
 // NOTE: Render texture is loaded by default with the defined color attachment format and depth RenderBuffer
-RenderTexture2D LoadRenderTextureEx(int width, int height, int colorBufferFormat)
+RenderTexture2D LoadRenderTextureEx(int width, int height, int colorBufferFormat, int depthBufferBits)
 {
     RenderTexture2D target = { 0 };
 
@@ -4445,15 +4445,19 @@ RenderTexture2D LoadRenderTextureEx(int width, int height, int colorBufferFormat
         target.texture.mipmaps = 1;
 
         // Create depth renderbuffer/texture
-        target.depth.id = rlLoadTextureDepth(width, height, true);
-        target.depth.width = width;
-        target.depth.height = height;
-        target.depth.format = 19;       //DEPTH_COMPONENT_24BIT?
-        target.depth.mipmaps = 1;
+        if (depthBufferBits > 0)
+        {
+            target.depth.id = rlLoadTextureDepthEx(width, height, true, depthBufferBits);
+            target.depth.width = width;
+            target.depth.height = height;
+            target.depth.format = 19;       //DEPTH_COMPONENT_24BIT?
+            target.depth.mipmaps = 1;
+        }
 
         // Attach color texture and depth renderbuffer/texture to FBO
         rlFramebufferAttach(target.id, target.texture.id, RL_ATTACHMENT_COLOR_CHANNEL0, RL_ATTACHMENT_TEXTURE2D, 0);
-        rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_RENDERBUFFER, 0);
+
+        if (target.depth.id > 0) rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_RENDERBUFFER, 0);
 
         // Check if fbo is complete with attachments (valid)
         if (rlFramebufferComplete(target.id)) TRACELOG(LOG_INFO, "FBO: [ID %i] Framebuffer object created successfully", target.id);
