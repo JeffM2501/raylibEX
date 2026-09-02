@@ -60,21 +60,40 @@ jobs:
           git checkout -b "$TEMP_BRANCH"
 
           # Attempt to rebase onto upstream/master
-          if git rebase upstream/master; then
-            echo "Rebase succeeded without conflicts."
-            # Checkout master and merge temp branch (fast-forward)
-            git checkout master
-            git merge --ff-only "$TEMP_BRANCH"
-            git push origin master --force
-          else
-            echo "Rebase failed due to conflicts."
-            git status > conflict_status.txt
-            git rebase --abort
+          if ! git rebase upstream/master; then
+            echo "Rebase encountered conflicts. Checking if conflicts can be resolved automatically..."
             
-            # Push the clean temp branch to origin
-            git push origin "$TEMP_BRANCH" --force
-            exit 1
+            while [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; do
+              CONFLICTS=$(git diff --name-only --diff-filter=U)
+              
+              if [ -z "$CONFLICTS" ]; then
+                GIT_EDITOR=true git rebase --continue || git rebase --skip || break
+                continue
+              fi
+
+              NON_PARSER_CONFLICTS=$(echo "$CONFLICTS" | grep -v '^tools/rlparser/output/' || true)
+              if [ -n "$NON_PARSER_CONFLICTS" ]; then
+                echo "Rebase failed due to unresolvable conflicts outside tools/rlparser/output/."
+                git status > conflict_status.txt
+                git rebase --abort
+                
+                # Push the clean temp branch to origin
+                git push origin "$TEMP_BRANCH" --force
+                exit 1
+              fi
+
+              echo "Resolving conflicts in tools/rlparser/output/ by accepting incoming version from upstream/master..."
+              git checkout upstream/master -- tools/rlparser/output/
+              git add tools/rlparser/output/
+              GIT_EDITOR=true git rebase --continue || git rebase --skip || true
+            done
           fi
+
+          echo "Rebase completed successfully."
+          # Checkout master and merge temp branch (fast-forward)
+          git checkout master
+          git merge --ff-only "$TEMP_BRANCH"
+          git push origin master --force
 
       - name: Create Issue on Failure
         if: failure() && steps.check-commits.outputs.sync_needed == 'true'
