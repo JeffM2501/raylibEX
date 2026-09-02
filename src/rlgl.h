@@ -3442,7 +3442,7 @@ unsigned int rlLoadTextureDepthEx(int width, int height, bool useRenderBuffer, i
     {
 #if defined(GRAPHICS_API_OPENGL_ES2)
         glInternalFormat = GL_DEPTH_COMPONENT16;
-        else if (bits == 24 && RLGL.ExtSupported.maxDepthBits >= 24) glInternalFormat = GL_DEPTH_COMPONENT24_OES;
+        if (bits == 24 && RLGL.ExtSupported.maxDepthBits >= 24) glInternalFormat = GL_DEPTH_COMPONENT24_OES;
         else if (bits == 32 && RLGL.ExtSupported.maxDepthBits == 32) glInternalFormat = GL_DEPTH_COMPONENT16;
 #else
         if (bits == 32) glInternalFormat = GL_DEPTH_COMPONENT32;
