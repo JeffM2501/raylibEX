@@ -1619,6 +1619,7 @@ Image ImageFromChannel(Image image, int selectedChannel)
 
     if (image.format == PIXELFORMAT_UNCOMPRESSED_GRAYSCALE ||
         image.format == PIXELFORMAT_UNCOMPRESSED_R32 ||
+        image.format == PIXELFORMAT_UNCOMPRESSED_R32I ||
         image.format == PIXELFORMAT_UNCOMPRESSED_R16)
     {
         if (selectedChannel > 0)
@@ -1730,7 +1731,7 @@ Image ImageFromChannel(Image image, int selectedChannel)
                 } break;
                 case PIXELFORMAT_UNCOMPRESSED_R32I:
                 {
-                    pixelValue = ((int*)image.data)[k] / (double)0x7FFFFFFF;
+                    pixelValue = ((int*)image.data)[k] / (float)0x7FFFFFFF;
                     k += 1;
 
                 } break;

@@ -462,6 +462,7 @@ typedef enum {
     RL_PIXELFORMAT_UNCOMPRESSED_R4G4B4A4,          // 16 bpp (4 bit alpha)
     RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8,          // 32 bpp
     RL_PIXELFORMAT_UNCOMPRESSED_R32,               // 32 bpp (1 channel - float)
+    RL_PIXELFORMAT_UNCOMPRESSED_R32I,               // 32 bpp (1 channel - int)
     RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32,         // 32*3 bpp (3 channels - float)
     RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32,      // 32*4 bpp (4 channels - float)
     RL_PIXELFORMAT_UNCOMPRESSED_R16,               // 16 bpp (1 channel - half float)
@@ -477,8 +478,8 @@ typedef enum {
     RL_PIXELFORMAT_COMPRESSED_PVRT_RGB,            // 4 bpp
     RL_PIXELFORMAT_COMPRESSED_PVRT_RGBA,           // 4 bpp
     RL_PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA,       // 8 bpp
-    RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA,       // 2 bpp
-    RL_PIXELFORMAT_UNCOMPRESSED_R32I               // 32 bpp (1 channel - int)
+    RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA       // 2 bpp
+
 } rlPixelFormat;
 
 // Texture parameters: filter mode
@@ -3674,7 +3675,7 @@ void rlGetGlTextureFormats(int format, unsigned int *glInternalFormat, unsigned 
         case RL_PIXELFORMAT_UNCOMPRESSED_R4G4B4A4: *glInternalFormat = GL_RGBA4; *glFormat = GL_RGBA; *glType = GL_UNSIGNED_SHORT_4_4_4_4; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8: *glInternalFormat = GL_RGBA8; *glFormat = GL_RGBA; *glType = GL_UNSIGNED_BYTE; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32: if (RLGL.ExtSupported.texFloat32) *glInternalFormat = GL_R32F; *glFormat = GL_RED; *glType = GL_FLOAT; break;
-        case RL_PIXELFORMAT_UNCOMPRESSED_R32I: if (RLGL.ExtSupported.texInt32) *glInternalFormat = GL_R32I; *glFormat = GL_RED; *glType = GL_INT; break;
+        case RL_PIXELFORMAT_UNCOMPRESSED_R32I: if (RLGL.ExtSupported.texInt32) *glInternalFormat = GL_R32I; *glFormat = GL_RED_INTEGER; *glType = GL_INT; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32: if (RLGL.ExtSupported.texFloat32) *glInternalFormat = GL_RGB32F; *glFormat = GL_RGB; *glType = GL_FLOAT; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R32G32B32A32: if (RLGL.ExtSupported.texFloat32) *glInternalFormat = GL_RGBA32F; *glFormat = GL_RGBA; *glType = GL_FLOAT; break;
         case RL_PIXELFORMAT_UNCOMPRESSED_R16: if (RLGL.ExtSupported.texFloat16) *glInternalFormat = GL_R16F; *glFormat = GL_RED; *glType = GL_HALF_FLOAT; break;
