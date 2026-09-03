@@ -243,6 +243,38 @@ int main(int argc, char *argv[])
     if (!exVSProjectSolutionFile) exVSProjectSolutionFile = "../../projects/VS2022/raylib.sln";
 #endif
 
+    // Make sure required paths exist
+    if (!DirectoryExists(exBasePath))
+    {
+        LOG("ERROR: Could not find raylib examples directory (hint: environment variable 'REXM_EXAMPLES_BASE_PATH')\n");
+        return 1;
+    }
+    if (!DirectoryExists(exWebPath))
+    {
+        LOG("ERROR: Could not find raylib.com examples directory (hint: environment variable 'REXM_EXAMPLES_WEB_PATH')\n");
+        return 1;
+    }
+    if (!FileExists(exTemplateFilePath))
+    {
+        LOG("ERROR: Could not find examples template file (hint: environment variable 'REXM_EXAMPLES_TEMPLATE_FILE_PATH')\n");
+        return 1;
+    }
+    if (!FileExists(exTemplateScreenshot))
+    {
+        LOG("ERROR: Could not find examples template screenshot (hint: environment variable 'REXM_EXAMPLES_TEMPLATE_SCREENSHOT_PATH')\n");
+        return 1;
+    }
+    if (!FileExists(exCollectionFilePath))
+    {
+        LOG("ERROR: Could not find examples collection file (hint: environment variable 'REXM_EXAMPLES_COLLECTION_FILE_PATH')\n");
+        return 1;
+    }
+    if (!FileExists(exVSProjectSolutionFile))
+    {
+        LOG("ERROR: Could not find VS solution file (hint: environment variable 'REXM_EXAMPLES_VS2022_SLN_FILE')\n");
+        return 1;
+    }
+
     char inFileName[1024] = { 0 };  // Example input filename (to be added)
 
     char exName[64] = { 0 };        // Example name, without extension: core_basic_window
@@ -671,7 +703,7 @@ int main(int argc, char *argv[])
             //------------------------------------------------------------------------------------------------
 
             // Recompile example (on raylib side)
-            // NOTE: Tools requirements: emscripten, w64devkit
+            // NOTE: Tools requirements: emscripten, make
             // Compile to: raylib.com/examples/<category>/<category>_example_name.html
             // Compile to: raylib.com/examples/<category>/<category>_example_name.data
             // Compile to: raylib.com/examples/<category>/<category>_example_name.wasm
@@ -681,7 +713,6 @@ int main(int argc, char *argv[])
             // WARNING 2: raylib.a and raylib.web.a must be available when compiling locally
 #if defined(_WIN32)
             LOG("INFO: [%s] Building example for PLATFORM_WEB (Host: Win32)\n", GetFileNameWithoutExt(inFileName));
-            _putenv("PATH=%PATH%;C:\\raylib\\w64devkit\\bin");
 #else
             LOG("INFO: [%s] Building example for PLATFORM_WEB (Host: POSIX)\n", GetFileNameWithoutExt(inFileName));
 #endif
@@ -781,9 +812,6 @@ int main(int argc, char *argv[])
 
             // Recompile example (on raylib side)
             // WARNING: EMSDK_PATH must be set to proper location when calling from GitHub Actions
-#if defined(_WIN32)
-            _putenv("PATH=%PATH%;C:\\raylib\\w64devkit\\bin");
-#endif
             system(TextFormat("make -C %s -f Makefile.Web %s/%s PLATFORM=PLATFORM_WEB -B", exBasePath, exRecategory, exRename));
 
             // Update generated .html metadata
@@ -802,14 +830,13 @@ int main(int argc, char *argv[])
 
 #if defined(RENAME_AUTO_COMMIT_CREATION)
             // Create GitHub commit with changes (local)
-            putenv("PATH=%PATH%;C:\\Program Files\\Git\\bin");
-            ChangeDirectory("C:\\GitHub\\raylib");
+            ChangeDirectory(TextFormat("%s/..", exBasePath));
             system("git --version");
             system("git status");
             system("git add -A");
             int result = system(TextFormat("git commit -m \"REXM: RENAME: example: `%s` --> `%s`\"", exName, exRename)); // Commit changes (only tracked files)
             if (result != 0) LOG("WARNING: Error committing changes\n");
-            ChangeDirectory("C:/GitHub/raylib.com");
+            ChangeDirectory(TextFormat("%s/..", exWebPath));
             system("git add -A");
             result = system(TextFormat("git commit -m \"REXM: RENAME: example: `%s` --> `%s`\"", exName, exRename)); // Commit changes (only tracked files)
             if (result != 0) LOG("WARNING: Error committing changes\n");
@@ -917,13 +944,6 @@ int main(int argc, char *argv[])
             LOG("INFO: Command requested: BUILD\n");
             LOG("INFO: Example(s) to be built: %i [%s]\n", exBuildListCount, (exBuildListCount == 1)? exBuildList[0] : argv[2]);
 
-#if defined(_WIN32)
-            // Set required environment variables
-            //putenv(TextFormat("RAYLIB_DIR=%s\\..", exBasePath));
-            _putenv("PATH=%PATH%;C:\\raylib\\w64devkit\\bin");
-            //putenv("MAKE=make");
-            //ChangeDirectory(exBasePath);
-#endif
             for (int i = 0; i < exBuildListCount; i++)
             {
                 // Get example name and category
@@ -1319,7 +1339,6 @@ int main(int argc, char *argv[])
                             // Build example for PLATFORM_WEB
                         #if defined(_WIN32)
                             LOG("INFO: [%s] Building example for PLATFORM_WEB (Host: Win32)\n", exInfo->name);
-                            _putenv("PATH=%PATH%;C:\\raylib\\w64devkit\\bin");
                         #else
                             LOG("INFO: [%s] Building example for PLATFORM_WEB (Host: POSIX)\n", exInfo->name);
                         #endif
@@ -1498,21 +1517,6 @@ int main(int argc, char *argv[])
             LOG("INFO: Command requested: TEST\n");
             LOG("INFO: Example(s) to be build and tested: %i [%s]\n", exBuildListCount, (exBuildListCount == 1)? exBuildList[0] : argv[2]);
 
-#if defined(_WIN32)
-            // Set required environment variables
-            //putenv(TextFormat("RAYLIB_DIR=%s\\..", exBasePath));
-            //_putenv("PATH=%PATH%;C:\\raylib\\w64devkit\\bin");
-            //putenv("MAKE=make");
-            //ChangeDirectory(exBasePath);
-            //_putenv("MAKE_PATH=C:\\raylib\\w64devkit\\bin");
-            //_putenv("EMSDK_PATH = C:\\raylib\\emsdk");
-            //_putenv("PYTHON_PATH=$(EMSDK_PATH)\\python\\3.13.3_64bit");
-            //_putenv("NODE_PATH=$(EMSDK_PATH)\\node\\22.16.0_64bit\\bin");
-            //_putenv("PATH=%PATH%;$(MAKE_PATH);$(EMSDK_PATH);$(NODE_PATH);$(PYTHON_PATH)");
-
-            _putenv("PATH=%PATH%;C:\\raylib\\w64devkit\\bin;C:\\raylib\\emsdk\\python\\3.13.3_64bit;C:\\raylib\\emsdk\\node\\22.16.0_64bit\\bin");
-#endif
-
             for (int i = 0; i < exBuildListCount; i++)
             {
                 // Get example name and category
@@ -1644,13 +1648,6 @@ int main(int argc, char *argv[])
                 for (int i = 0; i < 3; i++) { MemFree(srcTextUpdated[i]); srcTextUpdated[i] = NULL; }
 
                 // STEP 2: Build example for DESKTOP platform
-    #if defined(_WIN32)
-                // Set required environment variables
-                //putenv(TextFormat("RAYLIB_DIR=%s\\..", exBasePath));
-                _putenv("PATH=%PATH%;C:\\raylib\\w64devkit\\bin");
-                //putenv("MAKE=make");
-                //ChangeDirectory(exBasePath);
-    #endif
                 // Build example for PLATFORM_DESKTOP
     #if defined(_WIN32)
                 LOG("INFO: [%s] Building example for PLATFORM_DESKTOP (Host: Win32)\n", exName);
@@ -1898,6 +1895,7 @@ int main(int argc, char *argv[])
             printf("    remove <example_name>         : Remove an existing example\n");
             printf("    build <example_name>          : Build example for Desktop and Web platforms\n");
             printf("    test <example_name>           : Build and Test example for Desktop and Web platforms\n");
+            printf("    testlog <example_name>        : Validate test logs, generates report\n");
             printf("    validate                      : Validate examples collection, generates report\n");
             printf("    update                        : Validate and update examples collection, generates report\n\n");
 

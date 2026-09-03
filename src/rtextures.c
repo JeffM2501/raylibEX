@@ -4007,10 +4007,10 @@ void ImageDrawCircle(Image *dst, int centerX, int centerY, int radius, Color col
 
     while (y >= x)
     {
-        ImageDrawRectangle(dst, centerX - x, centerY + y, x*2, 1, color);
-        ImageDrawRectangle(dst, centerX - x, centerY - y, x*2, 1, color);
-        ImageDrawRectangle(dst, centerX - y, centerY + x, y*2, 1, color);
-        ImageDrawRectangle(dst, centerX - y, centerY - x, y*2, 1, color);
+        ImageDrawRectangle(dst, centerX - x, centerY + y, x*2 + 1, 1, color);
+        ImageDrawRectangle(dst, centerX - x, centerY - y, x*2 + 1, 1, color);
+        ImageDrawRectangle(dst, centerX - y, centerY + x, y*2 + 1, 1, color);
+        ImageDrawRectangle(dst, centerX - y, centerY - x, y*2 + 1, 1, color);
         x++;
 
         if (decesionParameter > 0)
@@ -4419,18 +4419,22 @@ TextureCubemap LoadTextureCubemap(Image image, int layout)
     return cubemap;
 }
 
-// Load texture for rendering (framebuffer)
-// NOTE: Render texture is loaded by default with RGBA color attachment and depth RenderBuffer
+// Load RGBA texture for rendering (framebuffer)
 RenderTexture2D LoadRenderTexture(int width, int height)
 {
     return LoadRenderTextureEx(width, height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, -1);
 }
 
-// Load texture for rendering (framebuffer), advanced
-// NOTE: Render texture is loaded by default with the defined color attachment format and depth RenderBuffer
-RenderTexture2D LoadRenderTextureEx(int width, int height, int colorBufferFormat, int depthBufferBits)
-{
-    RenderTexture2D target = { 0 };
+// Load texture for rendering (framebuffer), with specific format
+// NOTE: Render texture is loaded by default with RGBA color attachment and depth RenderBuffer
+RLAPI RenderTexture2D LoadRenderTextureEx(int width, int height, int format, int depthBufferBits)
+{    RenderTexture2D target = { 0 };
+
+    if (format >= PIXELFORMAT_COMPRESSED_DXT1_RGB)
+    {
+        TRACELOG(LOG_WARNING, "FBO: Render texture format not supported");
+        return target;
+    }
 
     target.id = rlLoadFramebuffer(); // Load an empty framebuffer
 
@@ -4439,10 +4443,10 @@ RenderTexture2D LoadRenderTextureEx(int width, int height, int colorBufferFormat
         rlEnableFramebuffer(target.id);
 
         // Create color texture (default to RGBA)
-        target.texture.id = rlLoadTexture(NULL, width, height, colorBufferFormat, 1);
+        target.texture.id = rlLoadTexture(NULL, width, height, format, 1);
         target.texture.width = width;
         target.texture.height = height;
-        target.texture.format = colorBufferFormat;
+        target.texture.format = format;
         target.texture.mipmaps = 1;
 
         // Create depth renderbuffer/texture
@@ -5375,7 +5379,7 @@ Color GetPixelColor(const void *srcPtr, int format)
         {
             color.r = (unsigned char)((((unsigned short *)srcPtr)[0] >> 11)*255/31);
             color.g = (unsigned char)(((((unsigned short *)srcPtr)[0] >> 6) & 0b0000000000011111)*255/31);
-            color.b = (unsigned char)((((unsigned short *)srcPtr)[0] & 0b0000000000011111)*255/31);
+            color.b = (unsigned char)(((((unsigned short *)srcPtr)[0] >> 1) & 0b0000000000011111)*255/31);
             color.a = (((unsigned short *)srcPtr)[0] & 0b0000000000000001)? 255 : 0;
 
         } break;
