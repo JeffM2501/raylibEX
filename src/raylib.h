@@ -1472,16 +1472,17 @@ RLAPI void ImageDrawTextPro(Image *dst, Font font, const char *text, Vector2 pos
 
 // Texture loading functions
 // NOTE: These functions require GPU access
-RLAPI Texture2D LoadTexture(const char *fileName);                                                       // Load texture from file into GPU memory (VRAM)
+RLAPI Texture2D LoadTexture(const char* fileName);                                                       // Load texture from file into GPU memory (VRAM)
 RLAPI Texture2D LoadTextureFromImage(Image image);                                                       // Load texture from image data
 RLAPI TextureCubemap LoadTextureCubemap(Image image, int layout);                                        // Load cubemap from image, multiple image cubemap layouts supported
 RLAPI RenderTexture2D LoadRenderTexture(int width, int height);                                          // Load texture for rendering (framebuffer)
-RLAPI RenderTexture2D LoadRenderTextureEx(int width, int height, int format, int depthBufferBits); // Load texture for rendering (framebuffer), with options
-RLAPI bool IsTextureValid(Texture2D texture);                                                            // Check if texture is valid (loaded in GPRLAPI void UnloadTexture(Texture2D texture);                                                             // Unload texture from GPU memory (VRAM)
+RLAPI RenderTexture2D LoadRenderTextureEx(int width, int height, int format, int depthBits);             // Load texture for rendering (framebuffer), with specific format
+RLAPI bool IsTextureValid(Texture2D texture);                                                            // Check if texture is valid (loaded in GPU)
+RLAPI void UnloadTexture(Texture2D texture);                                                             // Unload texture from GPU memory (VRAM)
 RLAPI bool IsRenderTextureValid(RenderTexture2D target);                                                 // Check if render texture is valid (loaded in GPU)
 RLAPI void UnloadRenderTexture(RenderTexture2D target);                                                  // Unload render texture from GPU memory (VRAM)
-RLAPI void UpdateTexture(Texture2D texture, const void *pixels);                                         // Update GPU texture with new data (pixels should be able to fill texture)
-RLAPI void UpdateTextureRec(Texture2D texture, Rectangle rec, const void *pixels);                       // Update GPU texture rectangle with new data (pixels and rec should fit in texture)
+RLAPI void UpdateTexture(Texture2D texture, const void* pixels);                                         // Update GPU texture with new data (pixels should be able to fill texture)
+RLAPI void UpdateTextureRec(Texture2D texture, Rectangle rec, const void* pixels);                       // Update GPU texture rectangle with new data (pixels and rec should fit in texture)
 
 // Texture configuration functions
 RLAPI void GenTextureMipmaps(Texture2D *texture);                                                        // Generate GPU mipmaps for a texture
