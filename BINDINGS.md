@@ -57,7 +57,7 @@ This is a set of recomendations and guidelines for binding authors, meant to hel
 | [fortran-raylib](https://github.com/interkosmos/fortran-raylib)                          | **6.0**          | [Fortran](https://fortran-lang.org)                                     | ISC                  |
 | [raylib-go](https://github.com/gen2brain/raylib-go)                                      | **6.0**          | [Go](https://golang.org)                                                | Zlib                 |
 | [raylib-guile](https://github.com/petelliott/raylib-guile)                               | **auto**         | [Guile](https://www.gnu.org/software/guile)                             | Zlib                 |
-| [h-raylib](https://github.com/Anut-py/h-raylib)                                          | **5.5-dev**      | [Haskell](https://haskell.org)                                          | Apache-2.0           |
+| [h-raylib](https://github.com/Anut-py/h-raylib)                                          | **6.1-dev**      | [Haskell](https://haskell.org)                                          | Apache-2.0           |
 | [raylib-hx](https://github.com/foreignsasquatch/raylib-hx)                               | 5.5              | [Haxe](https://haxe.org)                                                | Zlib                 |
 | [jaylib](https://github.com/janet-lang/jaylib)                                           | **5.0**          | [Janet](https://janet-lang.org)                                         | MIT                  |
 | [jaylib](https://github.com/electronstudio/jaylib/)                                      | **6.0**          | [Java](https://en.wikipedia.org/wiki/Java_(programming_language))       | GPLv3+CE             |
@@ -123,7 +123,8 @@ This is a set of recomendations and guidelines for binding authors, meant to hel
 | [fnl-raylib](https://github.com/0riginaln0/fnl-raylib)                                   | **5.5**          | [Fennel](https://fennel-lang.org/)                                      | MIT                  |
 | [Rayua](https://github.com/uiua-lang/rayua)                                              | **5.5**          | [Uiua](https://www.uiua.org/)                                           | **???**              |
 | [Target](https://github.com/FinnDemonCat/Target/tree/main/lib/raylib)                    | **5.5**          | [Dart](https://dart.dev/)                                               | Apache-2.0 license   |
-| [mach-raylib](https://github.com/angluca/mach-raylib)                                    | **6.0-dev**      | [Mach](https://machlang.org/)                                           | MIT                  |
+| [mach-raylib](https://github.com/angluca/mach-raylib)                                    | **6.x-dev**      | [Mach](https://machlang.org/)                                           | MIT                  |
+| [gcl native raylib module](https://github.com/gnuchanos/GnuchanOS/tree/main/language)    | **6.0**          | [gclang](https://github.com/gnuchanos/GnuchanOS/tree/main/language)     | GPLv3                |
 
 
 ### Utility Wrappers
@@ -211,7 +212,7 @@ These are older raylib bindings that are more than 2 versions old or have not be
 | [raylib-beef](https://github.com/M0n7y5/raylib-beef)                                     | 3.0              | [Beef](https://www.beeflang.org)                                        |
 | [raylib-never](https://github.com/never-lang/raylib-never)                               | 3.0              | [Never](https://github.com/never-lang/never)                            |
 | [raylib.cbl](https://github.com/Martinfx/Cobol/tree/master/OpenCobol/Games/raylib)       | 2.0              | [COBOL](https://en.wikipedia.org/wiki/COBOL)                            |
-| [gclang-raylib](https://github.com/gnuchanos/gcLang_Compiler/tree/main/windows_version/raylib_version)| **6.0** | [gclang](https://github.com/gnuchanos/gcLang_Compiler)              |
+
 
 Missing some language or wrapper? Feel free to create a new one! :)
 

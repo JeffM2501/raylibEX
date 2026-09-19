@@ -228,7 +228,7 @@
 #endif
 #ifndef MAX_FILEPATH_LENGTH
     #if defined(_WIN32)
-        #define MAX_FILEPATH_LENGTH      256        // On Win32, MAX_PATH = 260 (limits.h) but Windows 10, Version 1607 enables long paths...
+        #define MAX_FILEPATH_LENGTH      260        // On Win32, MAX_PATH = 260 (limits.h) but Windows 10, Version 1607 enables long paths...
     #else
         #define MAX_FILEPATH_LENGTH     4096        // On Linux, PATH_MAX = 4096 by default (limits.h)
     #endif
@@ -3566,7 +3566,7 @@ unsigned int *ComputeSHA256(const unsigned char *data, int dataSize)
     hash[7] = 0x5be0cd19;
 
     const unsigned long long bitLen = 8ULL*dataSize;
-    unsigned long long paddedSize = dataSize + sizeof(dataSize);
+    unsigned long long paddedSize = dataSize + sizeof(bitLen); // Reserve room for the 64 bit message length appended at the end
     paddedSize += (64 - (paddedSize%64));
     unsigned char *buffer = (unsigned char *)RL_CALLOC(paddedSize, sizeof(unsigned char));
 
