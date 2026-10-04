@@ -2563,13 +2563,16 @@ static void UpdateModelAnimationVertexBuffers(Model model)
 #endif
 
         if (mesh->animVertices == NULL) AllocateMeshCPUAnimBuffers(mesh);
+
         // Normal matrix only depends on the bone, compute it once per bone instead of per vertex
-        if ((mesh.normals != NULL) && !boneNormalsReady)
+        if ((mesh->normals != NULL) && !boneNormalsReady)
         {
             memset(boneNormalMatrices, 0, 256*sizeof(Matrix));
             for (unsigned int b = 0; (b < model.skeleton.boneCount) && (b < 256); b++) boneNormalMatrices[b] = MatrixTranspose(MatrixInvert(model.boneMatrices[b]));
             boneNormalsReady = true;
-        }        for (int vCounter = 0; vCounter < vertexValuesCount; vCounter += 3)
+        }       
+        
+        for (int vCounter = 0; vCounter < vertexValuesCount; vCounter += 3)
         {
             mesh->animVertices[vCounter] = 0;
             mesh->animVertices[vCounter + 1] = 0;
