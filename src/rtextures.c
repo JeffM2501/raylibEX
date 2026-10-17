@@ -512,7 +512,7 @@ Image LoadImageFromMemory(const char *fileType, const unsigned char *fileData, i
         if (fileData != NULL)
         {
             qoi_desc desc = { 0 };
-            image.data = qoi_decode(fileData, dataSize, &desc, (int) fileData[12]);
+            image.data = qoi_decode(fileData, dataSize, &desc, 0);   // NOTE: Using channels from file data
             image.width = desc.width;
             image.height = desc.height;
             image.format = (desc.channels == 4)? PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 : PIXELFORMAT_UNCOMPRESSED_R8G8B8;
@@ -5752,6 +5752,12 @@ int GetPixelDataSize(int width, int height, int format)
 {
     int dataSize = 0;       // Size in bytes
     int bpp = 0;            // Bits per pixel
+    
+    if ((width <= 0) || (height <= 0)) return dataSize;
+    
+    // TODO: Use rlGetPixelDataSize() directly instead of custom implementation?
+    // WARNING: raylib pixel format enum must be aligned with rlgl pixel format
+    //dataSize = rlGetPixelDataSize(width, height, format);
 
     switch (format)
     {
@@ -5797,9 +5803,11 @@ int GetPixelDataSize(int width, int height, int format)
             else if ((format >= PIXELFORMAT_COMPRESSED_DXT3_RGBA) && (format < PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA)) dataSize = 16;
         }
     }
-
-    // NOTE: In case required image data larger than 2GB, no memory allocated at all (NULL)
-    if (dataSize == 0) TRACELOG(LOG_WARNING, "Requested image size is larger than 2GB, it can not be allocated");
+    else
+    {
+        // NOTE: In case required image data larger than 2GB, no memory allocated at all (NULL)
+        TRACELOG(LOG_WARNING, "Requested image size is larger than 2GB, it can not be allocated");
+    }
 
     return dataSize;
 }
