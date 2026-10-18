@@ -28,8 +28,8 @@ static unsigned int delayWriteIndex = 0;
 //------------------------------------------------------------------------------------
 // Module Functions Declaration
 //------------------------------------------------------------------------------------
-static void AudioProcessEffectLPF(void *buffer, unsigned int frames);   // Audio effect: lowpass filter
-static void AudioProcessEffectDelay(void *buffer, unsigned int frames); // Audio effect: delay
+static void AudioProcessEffectLPF(void *buffer, unsigned int frames, void*);   // Audio effect: lowpass filter
+static void AudioProcessEffectDelay(void *buffer, unsigned int frames, void*); // Audio effect: delay
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -147,7 +147,7 @@ int main(void)
 // Module Functions Definition
 //------------------------------------------------------------------------------------
 // Audio effect: lowpass filter
-static void AudioProcessEffectLPF(void *buffer, unsigned int frames)
+static void AudioProcessEffectLPF(void *buffer, unsigned int frames, void *userParam)
 {
     static float low[2] = { 0.0f, 0.0f };
     static const float cutoff = 70.0f/44100.0f; // 70 Hz lowpass filter
@@ -168,7 +168,7 @@ static void AudioProcessEffectLPF(void *buffer, unsigned int frames)
 }
 
 // Audio effect: delay
-static void AudioProcessEffectDelay(void *buffer, unsigned int frames)
+static void AudioProcessEffectDelay(void *buffer, unsigned int frames, void *userParam)
 {
     for (unsigned int i = 0; i < frames*2; i += 2)
     {

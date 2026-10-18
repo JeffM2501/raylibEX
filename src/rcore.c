@@ -890,8 +890,8 @@ void ClearBackground(Color color)
     rlClearScreenBuffers();                             // Clear current framebuffers
 }
 
-// Begin canvas (framebuffer) drawing
-void BeginDrawing(void)
+// Begin a frame, sets default render mode (2d) and set frame time
+void BeginFrame(void)
 {
     // WARNING: Previously to BeginDrawing() other render textures drawing could happen,
     // consequently the measure for update vs draw is not accurate (only the total frame time is accurate)
@@ -907,8 +907,8 @@ void BeginDrawing(void)
                                         // NOTE: Not required with OpenGL 3.3+
 }
 
-// End canvas (framebuffer) drawing and swap buffers (double buffering)
-void EndDrawing(void)
+// End frame, swap buffers (double buffering), and poll for input events.
+void EndFrame(void)
 {
     rlDrawRenderBatchActive();      // Update and draw internal render batch
 

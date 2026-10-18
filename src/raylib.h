@@ -1056,10 +1056,14 @@ RLAPI void EnableCursor(void);                                    // Enable curs
 RLAPI void DisableCursor(void);                                   // Disable cursor (lock cursor)
 RLAPI bool IsCursorOnScreen(void);                                // Check if cursor is on the screen
 
+// Frame loop control functions
+RLAPI void BeginFrame(void);                                      // Begin a frame, sets default render mode (2d) and set frame time
+RLAPI void EndFrame(void);                                        // End frame, swap buffers (double buffering), and poll for input events.
+
 // Drawing-related functions
 RLAPI void ClearBackground(Color color);                          // Clear background (framebuffer) to color
-RLAPI void BeginDrawing(void);                                    // Begin canvas (framebuffer) drawing
-RLAPI void EndDrawing(void);                                      // End canvas (framebuffer) drawing and swap buffers (double buffering)
+#define BeginDrawing BeginFrame                                   // Begin canvas (framebuffer) drawing (legacy keyword)
+#define  EndDrawing EndFrame                                      // End canvas (framebuffer) drawing and swap buffers (double buffering) (legacy keyword)
 RLAPI void BeginMode2D(Camera2D camera);                          // Begin 2D mode with custom camera (2D)
 RLAPI void EndMode2D(void);                                       // End 2D mode with custom camera
 RLAPI void BeginMode3D(Camera3D camera);                          // Begin 3D mode with custom camera (3D)
