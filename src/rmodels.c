@@ -1570,6 +1570,12 @@ void DrawMesh(Mesh mesh, Material material, Matrix transform)
     if (material.shader.locs[SHADER_LOC_MATRIX_NORMAL] != -1) rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_NORMAL], MatrixTranspose(MatrixInvert(matModel)));
     //-----------------------------------------------------
 
+    // Upload material custom parameters
+    for (int i = 0; i < 4; i++)
+    {
+        if (material.shader.locs[SHADER_LOC_PARAM_0 + i] != -1) rlSetUniform(material.shader.locs[SHADER_LOC_PARAM_0+i], material.params+i, SHADER_UNIFORM_FLOAT, 1);
+    }
+
     // Bind active texture maps (if available)
     for (int i = 0; i < MAX_MATERIAL_MAPS; i++)
     {
